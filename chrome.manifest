@@ -1,0 +1,4 @@
+content postToChatter chrome/content/
+overlay	chrome://browser/content/browser.xul chrome://postToChatter/content/postToChatter.xul
+component {0af96550-7bf7-11e0-819a-0800200c9a66} components/autocomplete.js
+contract @mozilla.org/autocomplete/search;1?name=simple-autocomplete {0af96550-7bf7-11e0-819a-0800200c9a66}

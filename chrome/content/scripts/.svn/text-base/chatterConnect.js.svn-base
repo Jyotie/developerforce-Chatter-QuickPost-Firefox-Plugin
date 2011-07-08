@@ -1,0 +1,297 @@
+// obtain the window mediator
+var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Components.interfaces.nsIWindowMediator);
+
+var metaTitle = null, metaDesc = null;
+
+var user = null, userGroups = null, selectedGroup = null, authorized = false;
+
+var oauthConfig = {
+	'authorize_url' : 'https://login.salesforce.com/services/oauth2/authorize',
+	'response_type' : 'token',
+	'client_id' 	: '3MVG9y6x0357HlecmEDCncgv7j2hLpHs6046y0kByYceLzGWgE2DnNFV7eAPL6QyEns._TWncCnR5Go8H4zYv',
+	'client_secret' : '8629989312427648112',
+	'redirect_uri' 	: 'https://login.salesforce.com/services/oauth2/success',
+	'display' 		: 'popup',
+	'state'			: 'chatterAuth',
+	'reauth_url'	: 'https://login.salesforce.com/services/oauth2/token',
+	'r_grant_type' 	: 'refresh_token'
+}
+
+var oauth = {
+	'authorize_win' : null,
+	'access_token' 	: null,
+	'instance_url'	: null,
+	'id_url'		: null,
+	'refresh_token'	: null
+}
+
+var windowListener = {
+	onOpenWindow: function(xulWindow){
+		wm.removeListener(this);
+		chromeWindow = xulWindow.docShell
+								.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+								.getInterface(Components.interfaces.nsIDOMWindow);
+								
+		chromeWindow.addEventListener("DOMContentLoaded", 
+			function(){
+				chromeWindow.getBrowser().addProgressListener(progressListener);
+			}, 
+			false
+		);
+	},
+	
+	onWindowTitleChange: function(aWindow, title){}, 
+	onCloseWindow: function(window){}
+}
+
+var progressListener = {
+	onLocationChange: function(aProgress, aRequest, aURI){
+		// authorized
+		if(aURI.spec.indexOf(oauthConfig.redirect_uri) == 0 && aURI.spec.split("#").length > 1){
+			var message = aURI.spec.split("#")[1];
+			oauth.access_token	= decodeURIComponent(message.match(/.*access_token=([^&]*)&.*/)[1]);
+			oauth.instance_url	= decodeURIComponent(message.match(/.*instance_url=([^&]*)&.*/)[1]);
+			oauth.id_url 	  	= decodeURIComponent(message.match(/.*id=([^&]*)&?.*/)[1]);
+			oauth.refresh_token	= decodeURIComponent(message.match(/.*refresh_token=([^&]*)&.*/)[1]);
+			fetchUserInfo();
+		}
+		// denied
+		else if(aURI.spec.split("error=access_denied").length > 1){
+			if(oauth.authorize_win != null){
+				oauth.authorize_win.close();
+				oauth.authorize_win = null;
+			}
+		}
+	},
+	
+	onStateChange: function(aWebProgress, aRequest, aFlag, aStatus){},
+	onProgressChange: function(aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot){},
+	onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage){},
+	onSecurityChange: function(aWebProgress, aRequest, aState){}
+}
+
+/**
+* Initializes firefox extension
+*/
+function init(){
+	retrieveMetadata();
+	if(oauth.access_token == null){
+		authorize();
+	}
+}
+
+/**
+* Gets metadata from current page
+*/
+function retrieveMetadata() {
+	var i = 0, title = null, desc = null, meta = null;
+	
+	var mainWindow = wm.getMostRecentWindow("navigator:browser");
+	var metatags = mainWindow.content.document.getElementsByTagName("meta");
+	
+	while(i < metatags.length && (title == null || desc == null)){
+		meta = metatags[i];
+		if(meta.name == "Title" || meta.name == "title" || meta.name == "TITLE"){
+			title = meta.content;
+		}
+		if(meta.name == "Description" || meta.name == "DESCRIPTION" || meta.name == "description"){
+			desc = meta.content;
+		}
+		i++;
+	}
+	
+	metaTitle 	= title;
+	metaDesc 	= desc;
+}
+
+/**
+* Generates authorization url
+*/
+function generateAuthorizationUrl(){
+	return oauthConfig.authorize_url + 
+	"?response_type=" 	+ oauthConfig.response_type + 
+	"&client_id=" 		+ oauthConfig.client_id + 
+	"&redirect_uri=" 	+ encodeURIComponent(oauthConfig.redirect_uri) + 
+	"&display=" 		+ oauthConfig.display +
+	"&state="			+ oauthConfig.state;
+}
+	
+/**
+* Handles authorization flow
+*/
+function authorize(){
+	wm.addListener(windowListener);
+
+	oauth.authorize_win = window.open(
+		generateAuthorizationUrl(),
+		"Authorize",
+		"width=800,height=600,centerscreen,location=yes"
+	);
+}
+
+/**
+* Gets user info from salesforce
+*/
+function fetchUserInfo(){
+	if(authorized == false){
+		authorized = true;
+		$.ajax({ 
+			type: 'GET', 
+			url: oauth.id_url,
+			data: {	
+				'oauth_token' 	: oauth.access_token,
+				'Format' 		: 'json',
+				'Version'		: 'latest'
+			},
+			beforeSend: function(xhr) { 
+				xhr.setRequestHeader('X-PrettyPrint', 1);
+			}, 
+			success: function(data) {
+				initUserData(data);
+			}, 
+			error: function(xhr, textStatus, errorThrown) {
+				authorized = false;
+				if(xhr.responseText == 'Bad_OAuth_Token'){
+					//reauth(fetchUserInfo);
+					alert('Bad token');
+				}
+			} 
+		});
+	}
+}
+
+/*
+* Retrieves user data and init userGroups 
+* @param data - json with userInfo from rest api
+*/
+function initUserData(data){
+	user = data.getElementsByTagName("user")[0];
+	queryGroups();
+	loggedIn();
+}
+
+/**
+* Notifies user is logged in
+*/
+function loggedIn(){
+	// close authorization window
+	if(oauth.authorize_win != null){
+		oauth.authorize_win.close();
+		oauth.authorize_win = null;
+	}
+
+	// display notification
+}
+
+/**
+* Performs a request to rest api that executes a query
+* @param callback - method invoked to process the result
+* @param q - query
+*/
+function query(callback, q){
+	var url = user.getElementsByTagName("urls")[0]
+				  .getElementsByTagName("query")[0]
+				  .childNodes[0].nodeValue.replace('{version}', '20.0');
+	$.ajax({ 
+		type: 'GET', 
+		url: url,
+		data: {'q' : q},
+		beforeSend: function(xhr) { 
+			xhr.setRequestHeader('Content-type', 'application/json');
+			xhr.setRequestHeader('Authorization', 'OAuth ' + oauth.access_token); 
+			xhr.setRequestHeader('X-PrettyPrint', 1);
+		}, 
+		success: function(data) { 
+			callback(data); 
+		}, 
+		error: function(xhr, textStatus, errorThrown) {
+			if(errorThrown == 'Unauthorized'){
+				callbackParams = [callback, q];
+			//	reauth(query, callbackParams);
+			}
+			else{
+				var error = JSON.parse(xhr.responseText);
+				if(error[0].errorCode == 'INVALID_TYPE'){
+					alert("Unable to retrieve groups, please check that chatter is enabled for your organization");
+				}
+				else{
+					alert(error[0].message);
+				}
+				logout();
+			}
+		} 
+	});
+}
+
+/**
+* Performs a request to rest api that operates with sobjects
+* @param callback - method invoked to process the result
+* @param object - Object that will be used (Account, Contact, etc.)
+* @param data
+*/
+function sobject(callback, object, data){
+	var url = user.getElementsByTagName("urls")[0]
+				  .getElementsByTagName("sobjects")[0]
+				  .childNodes[0].nodeValue.replace('{version}', '21.0');
+	$.ajax({ 
+		type: "POST", 
+		url: url + object, 
+		data: data,
+		beforeSend: function(xhr) { 
+			xhr.setRequestHeader('Content-type', 'application/json');
+			xhr.setRequestHeader('Authorization', 'OAuth ' + oauth.access_token); 
+			xhr.setRequestHeader('X-PrettyPrint', 1);
+		}, 
+		success: function(data) { 
+		  callback(data); 
+		}, 
+		error: function(xhr, textStatus, errorThrown) {
+			if(errorThrown == 'Unauthorized'){
+				callbackParams = [callback, object, data];
+				reauth(sobject, callbackParams);
+			}
+			else{
+				var error = JSON.parse(xhr.responseText);
+				alert(error[0].message);
+			}
+		} 
+	});
+}
+
+/*
+* Query userGroups to rest api 
+*/
+function queryGroups(){
+	var q = "SELECT Id , CollaborationGroup.Name, CollaborationGroup.SmallPhotoUrl, CollaborationGroup.Description, CollaborationGroupId FROM CollaborationGroupMember where MemberId='" + user.getElementsByTagName('user_id')[0].childNodes[0].nodeValue + "' ORDER BY CollaborationGroup.Name";
+	query(retrieveGroups, q);
+}
+
+/*
+* Retrieves userGroups 
+* @param data - json with userInfo from rest api
+*/
+function retrieveGroups(data){
+	alert('retrieve groups');
+	userGroups = new Array();
+	
+	userGroups[0] = {
+		value	: user.getElementsByTagName('user_id')[0].childNodes[0].nodeValue, 
+		label 	: 'My Profile',
+		desc	: user.getElementsByTagName('display_name')[0].childNodes[0].nodeValue,
+		icon	: user.getElementsByTagName('photos')[0].getElementsByTagName('thumbnail')[0].childNodes[0].nodeValue + "?oauth_token=" + oauth.access_token 
+	}
+
+	for(var i=0 ; i<data.records.length ; i++){
+		userGroups[i+1] = {
+			value 	: data.records[i].CollaborationGroupId , 
+			label 	: data.records[i].CollaborationGroup.Name,
+			desc	: data.records[i].CollaborationGroup.Description != null ? data.records[i].CollaborationGroup.Description : '',
+			icon	: data.records[i].CollaborationGroup.SmallPhotoUrl + "?oauth_token=" + oauth.access_token
+		}
+	}
+}
+
+/**
+* Handles Logout functionality
+*/
+function logout(){}

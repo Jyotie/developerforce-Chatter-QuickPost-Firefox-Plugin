@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://posttochatter/content/styles/button.css"?>
+<?xml-stylesheet type="text/css" href="chrome://posttochatter/content/styles/styles.css"?>
+
+<!DOCTYPE overlay >
+<overlay id="post-to-chatter-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<script type="application/x-javascript" src="chrome://posttochatter/content/scripts/jquery-1.5.1.min.js"/>
+	<script type="application/x-javascript" src="chrome://posttochatter/content/scripts/jquery.simulate.js"/>
+	<script type="application/x-javascript" src="chrome://posttochatter/content/scripts/postToChatter.js"/>
+	
+	<!-- add button to the toolbar -->
+	<toolbar id="nav-bar">
+	  <toolbarbutton id="post-to-chatter" image="chrome://posttochatter/content/img/button.png"/>
+	</toolbar>
+
+	<!-- button details -->
+	<toolbarbutton 
+		id="post-to-chatter" 
+		label="Post to chatter"
+		tooltiptext="Post to chatter"
+		oncommand="init()"
+		class="toolbarbutton-1 chromeclass-toolbar-additional">
+		<panel id="thepanel"/>
+		<panel id="notification"/>
+	</toolbarbutton>
+
+	<panel id="thepanel" type="arrow">
+		<vbox id="chatterBody" class="content">
+			<hbox id="header">
+				<image src="chrome://posttochatter/content/img/chatter_logo.png" alt="Salesforce Chatter" id="chatterLogo" title="Salesforce Chatter"/>
+			</hbox>
+			<hbox id="loader">
+				<image id="loader-image" src="chrome://posttochatter/content/img/loading32.gif"/>
+			</hbox>
+			<vbox class="chatter-content">
+				<vbox id="chatter-box" class="publishercontainer">
+					<vbox class="publisherrightcontainer">
+						<vbox class="publishercontrols">
+							<vbox id="textarea" style="height:70px;">
+								<textbox multiline="true" 
+										 class="publishertextarea" 
+										 id="postTextArea" 
+										 onkeypress="return pnCountNoteChars(event);" 
+										 tabindex="0" />
+							</vbox>
+							<hbox id="buttons">
+								<label id="postText">Post to:</label>
+								<vbox id="chatterGroups"></vbox>
+								<vbox>
+									<button id="post" class="btn" label="Post to chatter" oncommand="createLinkPost();" tabindex="0" />
+								</vbox>
+							</hbox>
+						</vbox>
+					</vbox>
+				</vbox>
+			</vbox>
+			
+			<vbox id="metaContent">
+				<hbox id="metaImg"><iframe id="imageFrame" scrolling="no" src="chrome://posttochatter/content/page.html" width="300px" height="300px"/> </hbox>
+				<hbox id="metaText"></hbox>
+			</vbox>
+			<vbox id="footer">
+				You're logged in as<label id="username" class="text-link" tabindex="1"/> | <label id="notYou" class="text-link" onclick="logout();" tabindex="1">Not You?</label> 
+			</vbox>
+		</vbox>
+	</panel>
+	
+	<panel id="notification" type="arrow">
+		<hbox class="content">
+			<hbox>
+				<image src="chrome://posttochatter/content/img/icon.png" alt="Salesforce Chatter" id="chatterIcon"/>
+			</hbox>
+			<vbox>
+				<label id="notificationTitle"/>
+				<label id="notificationContent"/>
+				<label id="notificationLink" class="text-link" onclick="showPost();"/>
+			</vbox>
+		</hbox>
+	</panel>
+	
+</overlay>

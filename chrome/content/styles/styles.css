@@ -1,0 +1,219 @@
+/**
+* Content
+*/
+.content {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 100%;
+	background-color: white;
+	color: black;
+}
+
+a {
+	text-decoration: none;
+}
+
+.chatter-content {
+	-moz-appearance: none;
+	-moz-border-radius: 5px;
+	background: white url(chrome://posttochatter/content/img/feedbg.png) repeat-x scroll left -40px;
+	padding-left: 8px;
+	float: left;
+	margin:5px;
+}
+
+.publishercontainer {
+	background: transparent url(chrome://posttochatter/content/img/cloud.png) no-repeat scroll right top;
+	border: 0;
+	margin-bottom: 0;
+	line-height: normal;
+	padding-top: 10px;
+	padding-left: 0;
+	max-width: 640px;
+	min-height: 81px;
+}
+
+.publishercontainer .publisherrightcontainer {
+	padding: 0 0 7px 0;
+	padding-right: 20px;
+}
+
+/**
+* Textarea
+*/
+.publishertextarea {
+	-moz-appearance: none;
+	color: black;
+	background: transparent url(chrome://posttochatter/content/img/textfield_bg80opacity.png) repeat-x scroll center top;
+	resize: none;
+	overflow: hidden;
+	width: 100%;
+	line-height: 16px;
+	padding: 4px;
+	margin: 0;
+	margin-bottom: 2px;
+	outline-style: none;
+	-moz-word-wrap: break-word;
+	-moz-line-break: after-white-space;
+	-moz-border-radius: 5px;
+}
+
+#postTextArea {
+	height: 48px;
+	width: 496px;
+}
+
+#postTextArea:focus {
+	background-color: white;
+}
+
+/**
+* Post button
+*/
+.btn {
+	-moz-appearance: none;
+	-moz-border-radius: 5px 5px 5px 5px;
+	-moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+	-moz-box-shadow: 0 2px 4px #AAAAAA;
+	font-family: Arial,Helvetica,sans-serif;
+	cursor: pointer;
+    background: url("chrome://posttochatter/content/img/btn_sprite.png") repeat-x scroll right top #E8E8E9;
+	background-position: right -120px;
+    font-size: 1em;
+    padding: 2px 10px;
+	border: 2px solid #FFFFFF;
+    color: #FFFFFF;
+	
+}
+
+.btn:hover {
+	background: none repeat scroll 0 0 #1797C0;
+	background-position: right -30px;
+}
+
+#chatterBody {
+	width:535px; 
+	height:400px; 
+	margin: 0px; 
+	border: 0px;
+}
+
+#chatterLogo {
+	width: 200px; 
+	height: 65px;
+}
+
+#header {
+	width: 100%; 
+	background-color: #1797C0;
+}
+
+#buttons {
+	float: right;
+	text-align: right;
+	font-weight: bold;
+	height: 45px;
+}
+#loader {
+	text-align: center;
+	margin-top: 130px;
+	width: 100%;
+}
+
+#loader-image{
+	margin: 0 auto;
+}
+
+#metaContent {
+	float: left;
+	width: 100%;
+}
+
+#tabImg {
+	width: 150px; 
+	height: 150px;
+}
+
+#metaImg {
+	float: left;
+	margin-left: 10px;
+	width: 150px; 
+	height: 150px;
+	border: 1px solid grey;
+}
+
+#metaText {
+	border: 1px solid grey;
+	margin-right: 10px;
+	padding: 5px;
+	color: #999;
+	height: 150px;
+	width: 345px;
+	overflow: hidden;
+	float: right;
+}
+
+#footer {
+	width: 535px;
+	text-align: center;
+	margin-top: 30px;
+}
+
+.text-link {
+	text-decoration: none;
+	color: #356FB6;
+}
+
+#postText{
+	line-height: 25px;
+}
+
+#groups {
+	-moz-appearance: none;
+	-moz-border-radius: 5px 5px 5px 5px;
+	margin-left: 5px;
+	margin-right: 5px;
+	height: 25px;
+	width: 310px;
+	text-align: left;
+	padding: 2px;
+}
+
+.inputField {
+	border: 1px solid #C7CCCE;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.groupImg {
+	width: 32px;
+	height: 32px;
+	float: left;
+	margin-right: 7px;
+	margin-top: 2px;
+}
+
+.errorContainer {
+	border: 1px solid red;
+}
+
+.error {
+	text-align: left;
+	color: red;
+	font-weight: bold;
+}
+
+#imageFrame {
+	height: 150px;
+	width: 150px;
+}
+
+#notificationTitle {
+	font-weight: bold;
+}
+
+#groups menupopup > menuitem{
+	max-width: none !important;
+}

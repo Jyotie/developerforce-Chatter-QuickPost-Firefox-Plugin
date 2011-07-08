@@ -1,0 +1,28 @@
+<html>
+<head>
+</head>
+
+	<body>
+		<canvas id="tabpreview"></canvas>
+		<script>
+			function showImage(){
+				var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"].getService(Components.interfaces.nsIWindowMediator);
+				var mainWindow = wm.getMostRecentWindow("navigator:browser");
+			
+				var b = mainWindow.getBrowser();
+				var tp = document.getElementById("tabpreview");
+				var win = b.getBrowserForTab(b.selectedTab).contentWindow;
+				
+				var canvas = document.getElementById("tabpreview");
+				
+				canvas.width = 130;
+				canvas.height = 130;
+
+				var ctx = canvas.getContext("2d");
+				ctx.scale(1/(win.innerWidth/canvas.width), 1/(win.innerHeight/canvas.height));
+				ctx.drawWindow(win, 0, 0, win.innerWidth, win.innerHeight, "rgb(255,255,255)");
+			}
+		</script>
+	
+	</body>
+</html>
